@@ -11,6 +11,9 @@ import java.io.Serializable;
 @Table
 public class User implements Serializable {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Integer userId;
     private String userNick;
     private String userPassword;
@@ -23,8 +26,7 @@ public class User implements Serializable {
         this.userPassword = userPassword;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
 
 
     public Integer getUserId() {
