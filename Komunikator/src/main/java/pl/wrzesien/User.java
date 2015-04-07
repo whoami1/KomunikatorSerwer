@@ -8,7 +8,7 @@ import java.io.Serializable;
  */
 
 @Entity
-@Table
+@Table(name="user")
 public class User implements Serializable {
 
     @Id
@@ -21,13 +21,14 @@ public class User implements Serializable {
     public User() {
     }
 
+    public User(Integer userId) {
+        this.userId = userId;
+    }
+
     public User(String userNick, String userPassword) {
         this.userNick = userNick;
         this.userPassword = userPassword;
     }
-
-
-
 
     public Integer getUserId() {
         return userId;
