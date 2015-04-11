@@ -8,38 +8,30 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.List;
 
-public class GreetingServer extends Thread
-{
+public class GreetingServer extends Thread {
     private ServerSocket serverSocket;
 
-    public GreetingServer(int port) throws IOException
-    {
+    public GreetingServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         serverSocket.setSoTimeout(1000000);
     }
 
-    boolean check(String l, String p)
-    {
+    boolean check(String l, String p) {
         //hibernateutils zmienic, żeby sprawdzało z bazy danych, używając podobnie jak w main
-        UserService main = new UserService();
+        UserService userService = new UserService();
 
-        List<User> users = main.showUsers();
-        for (User user : users)
-        {
-            if (user.getUserNick().equals(l) && user.getUserPassword().equals(p))
-            {
+        List<User> users = userService.showUsers();
+        for (User user : users) {
+            if (user.getUserNick().equals(l) && user.getUserPassword().equals(p)) {
                 return true;
             }
         }
         return false;
     }
 
-    public void run()
-    {
-        while (true)
-        {
-            try
-            {
+    public void run() {
+        while (true) {
+            try {
                 System.out.println("Oczekiwanie na klienta na porcie " +
                         serverSocket.getLocalPort() + "...");
                 Socket server = serverSocket.accept();
@@ -54,30 +46,22 @@ public class GreetingServer extends Thread
                         new DataOutputStream(server.getOutputStream());
                 out.writeUTF(check.toString());
                 server.close();
-            }
-            catch (SocketTimeoutException s)
-            {
+            } catch (SocketTimeoutException s) {
                 System.out.println("Socket timed out!");
                 break;
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 e.printStackTrace();
                 break;
             }
         }
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         int port = Integer.parseInt(args[0]);
-        try
-        {
+        try {
             Thread t = new GreetingServer(port);
             t.start();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
