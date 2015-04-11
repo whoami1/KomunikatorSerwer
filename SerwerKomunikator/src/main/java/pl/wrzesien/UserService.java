@@ -1,5 +1,6 @@
 package pl.wrzesien;
 
+import org.hibernate.Query;
 import org.hibernate.classic.Session;
 
 import java.util.List;
@@ -53,5 +54,29 @@ public class UserService {
 
         session.getTransaction().commit();
         return result;
+    }
+
+    public Boolean checkCredentials(String login, String password)
+    {
+        session.beginTransaction();
+
+        List<Query> result = session.createQuery("FROM User WHERE userNick='" + login + "' AND userPassword='" + password + "'").list();
+        session.getTransaction().commit();
+        if(result.size() == 1)
+            return true;
+        else
+            return false;
+    }
+
+    public Boolean checkIfLoginExists(String login)
+    {
+        session.beginTransaction();
+
+        List<Query> result = session.createQuery("FROM User WHERE userNick='" + login + "'").list();
+        session.getTransaction().commit();
+        if(result.size() == 1)
+            return true;
+        else
+            return false;
     }
 }
