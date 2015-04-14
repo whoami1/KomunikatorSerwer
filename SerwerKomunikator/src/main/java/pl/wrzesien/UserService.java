@@ -20,6 +20,7 @@ public class UserService {
     }
 
     public void newUser(String userNick, String userPassword) {
+        this.session = HibernateUtil.getSessionFactory().getCurrentSession();
         session.beginTransaction();
 
         User user = new User(userNick, userPassword);
@@ -74,7 +75,7 @@ public class UserService {
 
         List<Query> result = session.createQuery("FROM User WHERE userNick='" + login + "'").list();
         session.getTransaction().commit();
-        if(result.size() == 1)
+        if(result.size() == 1) //jeśli znajdzie to true, to znaczy, że taki użytkownik już istnieje
             return true;
         else
             return false;

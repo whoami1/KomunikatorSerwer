@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,10 @@ import java.util.List;
  */
 public class SocketThread implements Runnable {
     private Socket socket;
+    private SimpleDateFormat timeAndDate;
     private Date time;
+
+    public String login;
 
     public SocketThread(Socket socket) {
         this.socket = socket;
@@ -25,9 +29,12 @@ public class SocketThread implements Runnable {
     private void log(String text)
     {
         //okienko.wpis(System.currentTimeMillis() + "|" + text + "\n");
+        timeAndDate = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss (Z)");
         time = new Date();
-        DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
-        System.out.println(df.format(time) + "|" + socket.getPort() + "|" + text);
+        //System.out.println( simpleDateHere.format(new Date()) );
+        //DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+        System.out.println(timeAndDate.format(time) + "|" + socket.getPort() + "|" + text);
+        System.out.println();
     }
 
     /*boolean checkCredentials(String l, String p) {
@@ -61,6 +68,7 @@ public class SocketThread implements Runnable {
                         Boolean check = us.checkCredentials(split[1], split[2]);
                         out.writeUTF("login;" + check.toString());
                         if (check) {
+                            login = split[1];
                             log("Zalogowano uzytkownika: " + split[1]);
                             while (true) {
                                 try {
@@ -91,12 +99,13 @@ public class SocketThread implements Runnable {
 
                             if (us.checkIfLoginExists(login)) {
                                 out.writeUTF("error;303"); //login juz istnieje
-                                log("Blad 303 - rozlaczam z " + socket.getRemoteSocketAddress());
+                                log("Blad 303 - uzytkownik o podanym loginie : " + login + " juz istnieje - rozlaczam z " + socket.getRemoteSocketAddress());
                                 socket.close();
                             } else {
+                                //UserService test = new UserService(); //- z jakiegoœ powodu w tym miejscu sesja jest wy³¹czona, gdy próbujê tworzyæ nowego u¿ytkownika
                                 us.newUser(login, password);
                                 out.writeUTF("register;true");
-                                log("Zarejestrowano - rozlaczam z " + socket.getRemoteSocketAddress());
+                                log("Zarejestrowano uzytkownika o loginie: " + login + " - rozlaczam z " + socket.getRemoteSocketAddress());
                                 socket.close();
                             }
                         } else {
@@ -119,14 +128,21 @@ public class SocketThread implements Runnable {
         {
             if(e.toString().indexOf("Connection reset") != -1)
             {
-                log("Klient sie rozlaczyl");
+                if (login != "")
+                {
+                    log("Uzytkownik " + login + " sie rozlaczyl");
+                }
+                else
+                {
+                    log("Klient sie rozlaczyl przed zalogowaniem");
+                }
             }
             else
                 log("Wyjatek SocketException: [" + e.toString() + "]");
         }
         catch(IOException ex)
         {
-            log("Wyjatek: " + ex.toString());
+            log("Wyjatek: [" + ex.toString() + "]");
         }
     }
 }

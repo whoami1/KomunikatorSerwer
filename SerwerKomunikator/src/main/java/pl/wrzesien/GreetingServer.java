@@ -7,11 +7,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 public class GreetingServer extends Thread {
     private ServerSocket serverSocket;
+    private SimpleDateFormat timeAndDate;
     private Date time;
 
     public GreetingServer(int port) throws IOException {
@@ -22,9 +24,10 @@ public class GreetingServer extends Thread {
     private void log(String text)
     {
         //okienko.wpis(System.currentTimeMillis() + "|" + text + "\n");
+        timeAndDate = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss (Z)");
         time = new Date();
-        DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
-        System.out.println(df.format(time) + "|" + serverSocket.getLocalPort() + "|" + text);
+        //DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+        System.out.println(timeAndDate.format(time) + "|" + serverSocket.getLocalPort() + "|" + text);
     }
 
     public void run() {
