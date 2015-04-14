@@ -1,22 +1,18 @@
 package pl.wrzesien;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
-public class GreetingServer extends Thread {
+public class ServerMain extends Thread {
     private ServerSocket serverSocket;
     private SimpleDateFormat timeAndDate;
     private Date time;
 
-    public GreetingServer(int port) throws IOException {
+    public ServerMain(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         serverSocket.setSoTimeout(1000000);
     }
@@ -50,7 +46,7 @@ public class GreetingServer extends Thread {
     public static void main(String[] args) {
         int port = 6066;//Integer.parseInt(args[0]);
         try {
-            Thread t = new GreetingServer(port);
+            Thread t = new ServerMain(port);
             t.start();
         } catch (IOException e) {
             e.printStackTrace();

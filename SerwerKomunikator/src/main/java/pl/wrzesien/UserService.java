@@ -12,7 +12,7 @@ public class UserService {
     private Session session;
 
     public UserService() {
-        this.session = HibernateUtil.getSessionFactory().getCurrentSession();
+        this.session = HibernateUtil.getSessionFactory().openSession();
     }
 
     public void close() {
@@ -20,7 +20,7 @@ public class UserService {
     }
 
     public void newUser(String userNick, String userPassword) {
-        this.session = HibernateUtil.getSessionFactory().getCurrentSession();
+        //this.session = HibernateUtil.getSessionFactory().getCurrentSession();
         session.beginTransaction();
 
         User user = new User(userNick, userPassword);
@@ -57,6 +57,7 @@ public class UserService {
         return result;
     }
 
+    //checkCredentials dziala przy logowaniu
     public Boolean checkCredentials(String login, String password)
     {
         session.beginTransaction();
@@ -69,6 +70,7 @@ public class UserService {
             return false;
     }
 
+    //chceckIfLoginExists dziala przy rejestracji
     public Boolean checkIfLoginExists(String login)
     {
         session.beginTransaction();

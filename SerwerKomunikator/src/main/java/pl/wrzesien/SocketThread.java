@@ -2,9 +2,7 @@ package pl.wrzesien;
 
 import org.hibernate.Session;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.DateFormat;
@@ -36,20 +34,6 @@ public class SocketThread implements Runnable {
         System.out.println(timeAndDate.format(time) + "|" + socket.getPort() + "|" + text);
         System.out.println();
     }
-
-    /*boolean checkCredentials(String l, String p) {
-        //hibernateutils zmienic, ¿eby sprawdza³o z bazy danych, u¿ywaj¹c podobnie jak w main
-        UserService userService = new UserService();
-
-        List<User> users = userService.showUsers();
-        for (User user : users) {
-            if (user.getUserNick().equals(l) && user.getUserPassword().equals(p)) {
-                return true;
-            }
-        }
-
-        return false;
-    }*/
 
     @Override
     public void run() { //typ pakietu;dane.... - logowanie: login;nick;haslo, rejestracja: register;nick;haslo
