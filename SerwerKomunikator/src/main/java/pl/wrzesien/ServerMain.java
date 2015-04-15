@@ -5,12 +5,34 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class ServerMain extends Thread {
     private ServerSocket serverSocket;
     private SimpleDateFormat timeAndDate;
     private Date time;
+
+    private ArrayList<String> userList = new ArrayList<>();
+
+    public void addOnlineUser(String username)
+    {
+        userList.add(username);
+    }
+
+    public void removeOnlineUser(String username)
+    {
+        userList.remove(username);
+    }
+
+    public void printUsers()
+    {
+        log("Zalogowani uzytkownicy:");
+        for(String u : userList)
+        {
+            System.out.println(u);
+        }
+    }
 
     public ServerMain(int port) throws IOException {
         serverSocket = new ServerSocket(port);
@@ -32,7 +54,7 @@ public class ServerMain extends Thread {
                 log("Oczekiwanie na klienta na porcie " +
                         serverSocket.getLocalPort() + "...");
                 Socket server = serverSocket.accept();//nowy watek + przeslanie do niego tego socketa + kontynuacja petli
-                new Thread(new SocketThread(server)).start();
+                new Thread(new SocketThread(server, this)).start();
             } catch (SocketTimeoutException s) {
                 log("Socket timed out!");
                 break;

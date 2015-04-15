@@ -18,4 +18,11 @@ public class UserListResponse  implements Serializable {
     public List<User> getUserList() {
         return userList;
     }
+
+    @Override
+    public String toString() {
+        return "UserListResponse{" +
+                "userList=" + userList +
+                '}';
+    }
 }

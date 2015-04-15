@@ -30,6 +30,10 @@ public class User implements Serializable {
         this.userPassword = userPassword;
     }
 
+    public User(String userNick) {
+        this.userNick = userNick;
+    }
+
     public Integer getUserId() {
         return userId;
     }
