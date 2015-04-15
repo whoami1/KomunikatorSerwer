@@ -1,14 +1,15 @@
 package pl.wrzesien;
 
-import org.hibernate.Session;
+import pl.entity.request.LoginRequest;
+import pl.entity.request.RegisterRequest;
+import pl.entity.response.LoginResponse;
+import pl.entity.response.RegistrationResponse;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Micha³ Wrzesieñ on 2015-04-11.
@@ -24,8 +25,7 @@ public class SocketThread implements Runnable {
         this.socket = socket;
     }
 
-    private void log(String text)
-    {
+    private void log(String text) {
         //okienko.wpis(System.currentTimeMillis() + "|" + text + "\n");
         timeAndDate = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss (Z)");
         time = new Date();
@@ -37,84 +37,66 @@ public class SocketThread implements Runnable {
 
     @Override
     public void run() { //typ pakietu;dane.... - logowanie: login;nick;haslo, rejestracja: register;nick;haslo
-        try {
+        try
+        {
             UserService us = new UserService();
             log("Polaczono z " + socket.getRemoteSocketAddress());
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            //System.out.println(in.readUTF());
-            String[] split = in.readUTF().split(";");
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            if (split.length > 0)
-            {
-                switch (split[0])
-                {
-                    case "login":
-                        Boolean check = us.checkCredentials(split[1], split[2]);
-                        out.writeUTF("login;" + check.toString());
-                        if (check) {
-                            login = split[1];
-                            log("Zalogowano uzytkownika: " + split[1]);
-                            while (true) {
-                                try {
-                                    Thread.sleep(100);
-                                    //petla obslugujaca uzytkownika (wysylanie wiadomosci etc)
-                                    split = in.readUTF().split(";");
-                                    switch (split[0]) {
-                                        case "sendmsg":
-                                            break;
-                                        case "addfriend":
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                } catch (InterruptedException ex) {
-                                    log("Sleep zostal przerwany");
-                                }
-                            }
-                        } else {
-                            log("Bledny login lub haslo - rozlaczam z " + socket.getRemoteSocketAddress());
-                            socket.close();
-                        }
-                        break;
-                    case "register":
-                        if (split.length == 3) {
-                            String login = split[1];
-                            String password = split[2];
 
-                            if (us.checkIfLoginExists(login)) {
-                                out.writeUTF("error;303"); //login juz istnieje
-                                log("Blad 303 - uzytkownik o podanym loginie : " + login + " juz istnieje - rozlaczam z " + socket.getRemoteSocketAddress());
-                                socket.close();
-                            } else {
-                                //UserService test = new UserService(); //- z jakiegoœ powodu w tym miejscu sesja jest wy³¹czona, gdy próbujê tworzyæ nowego u¿ytkownika
-                                us.newUser(login, password);
-                                out.writeUTF("register;true");
-                                log("Zarejestrowano uzytkownika o loginie: " + login + " - rozlaczam z " + socket.getRemoteSocketAddress());
-                                socket.close();
-                            }
-                        } else {
-                            out.writeUTF("error;304"); //nieobslugiwany/nieznany pakiet
-                            log("Nieobslugiwany/nieznany pakiet - rozlaczam z " + socket.getRemoteSocketAddress());
-                            socket.close();
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            } else
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+
+            Object obj;
+
+            while ((obj = ois.readObject()) != null)
             {
-                out.writeUTF("error;305"); //bledny pakiet
-                log("Bledny pakiet - rozlaczam z " + socket.getRemoteSocketAddress());
-                socket.close();
+                if(obj instanceof LoginRequest)
+                {
+                    LoginRequest loginRequest = (LoginRequest) obj;
+                    System.out.println(loginRequest.toString());
+                    login = loginRequest.getLogin();
+                    boolean success = us.checkCredentials(loginRequest.getLogin(),loginRequest.getPassword());
+
+                    if (success == true)
+                    {
+                        oos.writeObject(new LoginResponse(success));
+                        log("Zalogowano uzytkownika: " + loginRequest.getLogin());
+                    }
+                    else
+                    {
+                        oos.writeObject(new LoginResponse(success));
+                        log("Nieprawidlowy login lub haslo - rozlaczam z " + socket.getRemoteSocketAddress());
+                        //socket.close();
+                    }
+                }
+                else if(obj instanceof RegisterRequest)
+                {
+                    RegisterRequest registerRequest = (RegisterRequest) obj;
+                    System.out.println(registerRequest.toString());
+                    boolean succes = us.checkIfLoginExists(registerRequest.getLogin());
+
+                    if (succes == true)
+                    {
+                        oos.writeObject(new RegistrationResponse(succes));
+                        log("Uzytkownik o podanym loginie : " + registerRequest.getLogin() + " juz istnieje - rozlaczam z " + socket.getRemoteSocketAddress());
+                        //socket.close();
+                    }
+                    else
+                    {
+                        oos.writeObject(new RegistrationResponse(succes));
+                        us.newUser(registerRequest.getLogin(), registerRequest.getPassword());
+                        log("Zarejestrowano uzytkownika o loginie: " + registerRequest.getLogin() + " - rozlaczam z " + socket.getRemoteSocketAddress());
+                        //socket.close();
+                    }
+                }
             }
         }
         catch(SocketException e)
         {
             if(e.toString().indexOf("Connection reset") != -1)
             {
-                if (login != "")
+                if (!login.isEmpty())
                 {
-                    log("Uzytkownik " + login + " sie rozlaczyl");
+                    log("Uzytkownik: " + login + " sie rozlaczyl");
                 }
                 else
                 {
@@ -122,11 +104,18 @@ public class SocketThread implements Runnable {
                 }
             }
             else
+            {
                 log("Wyjatek SocketException: [" + e.toString() + "]");
+                e.printStackTrace();
+            }
         }
-        catch(IOException ex)
+        catch (ClassNotFoundException e)
         {
-            log("Wyjatek: [" + ex.toString() + "]");
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 }
