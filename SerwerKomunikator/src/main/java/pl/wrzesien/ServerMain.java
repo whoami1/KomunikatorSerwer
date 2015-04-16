@@ -15,21 +15,17 @@ public class ServerMain extends Thread {
 
     private ArrayList<String> userList = new ArrayList<>();
 
-    public void addOnlineUser(String username)
-    {
+    public void addOnlineUser(String username) {
         userList.add(username);
     }
 
-    public void removeOnlineUser(String username)
-    {
+    public void removeOnlineUser(String username) {
         userList.remove(username);
     }
 
-    public void printUsers()
-    {
+    public void printOnlineUsers() {
         log("Zalogowani uzytkownicy:");
-        for(String u : userList)
-        {
+        for (String u : userList) {
             System.out.println(u);
         }
     }
@@ -39,8 +35,7 @@ public class ServerMain extends Thread {
         serverSocket.setSoTimeout(1000000);
     }
 
-    private void log(String text)
-    {
+    private void log(String text) {
         //okienko.wpis(System.currentTimeMillis() + "|" + text + "\n");
         timeAndDate = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss (Z)");
         time = new Date();
@@ -51,8 +46,7 @@ public class ServerMain extends Thread {
     public void run() {
         while (true) {
             try {
-                log("Oczekiwanie na klienta na porcie " +
-                        serverSocket.getLocalPort() + "...");
+                log("Oczekiwanie na klienta na porcie " + serverSocket.getLocalPort() + "...");
                 Socket server = serverSocket.accept();//nowy watek + przeslanie do niego tego socketa + kontynuacja petli
                 new Thread(new SocketThread(server, this)).start();
             } catch (SocketTimeoutException s) {

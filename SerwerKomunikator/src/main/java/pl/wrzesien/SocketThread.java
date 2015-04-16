@@ -1,18 +1,20 @@
 package pl.wrzesien;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.entity.request.LoginRequest;
 import pl.entity.request.RegisterRequest;
+import pl.entity.request.TestowaWiadomoscRequest;
 import pl.entity.response.LoginResponse;
 import pl.entity.response.RegistrationResponse;
-import pl.entity.response.UserListResponse;
+import pl.entity.response.TestowaWiadomoscResponse;
+import pl.logback.Message;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Micha³ Wrzesieñ on 2015-04-11.
@@ -23,8 +25,10 @@ public class SocketThread implements Runnable {
     private Date time;
 
     public String login;
-
     private ServerMain server;
+
+/*    private Message message = new Message();
+    private static final Logger logger = LoggerFactory.getLogger(SocketThread.class);*/
 
     public SocketThread(Socket socket, ServerMain server) {
         this.socket = socket;
@@ -46,7 +50,7 @@ public class SocketThread implements Runnable {
         try
         {
             UserService us = new UserService();
-            log("Polaczono z " + socket.getRemoteSocketAddress());
+            log("Polaczono z" + socket.getRemoteSocketAddress());
 
             ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
@@ -68,13 +72,14 @@ public class SocketThread implements Runnable {
                         log("Zalogowano uzytkownika: " + loginRequest.getLogin());
 
                         server.addOnlineUser(loginRequest.getLogin());
-                        server.printUsers();
+                        server.printOnlineUsers();
                     }
                     else
                     {
+                        login = null;
                         oos.writeObject(new LoginResponse(success));
                         log("Nieprawidlowy login lub haslo - rozlaczam z " + socket.getRemoteSocketAddress());
-                        //socket.close();
+                        socket.close();
                     }
                 }
                 else if(obj instanceof RegisterRequest)
@@ -87,15 +92,22 @@ public class SocketThread implements Runnable {
                     {
                         oos.writeObject(new RegistrationResponse(succes));
                         log("Uzytkownik o podanym loginie : " + registerRequest.getLogin() + " juz istnieje - rozlaczam z " + socket.getRemoteSocketAddress());
-                        //socket.close();
+                        socket.close();
                     }
                     else
                     {
                         oos.writeObject(new RegistrationResponse(succes));
                         us.newUser(registerRequest.getLogin(), registerRequest.getPassword());
                         log("Zarejestrowano uzytkownika o loginie: " + registerRequest.getLogin() + " - rozlaczam z " + socket.getRemoteSocketAddress());
-                        //socket.close();
+                        socket.close();
                     }
+                }
+                else if(obj instanceof TestowaWiadomoscRequest)
+                {
+                    TestowaWiadomoscRequest testowaWiadomoscRequest = (TestowaWiadomoscRequest) obj;
+                    System.out.println(testowaWiadomoscRequest.toString());
+                    boolean succes = false;
+                    oos.writeObject(new TestowaWiadomoscResponse(succes));
                 }
             }
         }
@@ -107,7 +119,7 @@ public class SocketThread implements Runnable {
                 {
                     log("Uzytkownik: " + login + " sie rozlaczyl");
                     server.removeOnlineUser(login);
-                    server.printUsers();
+                    server.printOnlineUsers();
                 }
                 else
                 {
