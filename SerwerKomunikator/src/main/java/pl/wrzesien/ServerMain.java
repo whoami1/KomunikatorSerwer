@@ -1,5 +1,9 @@
 package pl.wrzesien;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.logback.Message;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,6 +17,9 @@ public class ServerMain extends Thread {
     private SimpleDateFormat timeAndDate;
     private Date time;
 
+    private Message message = new Message();
+    private static final Logger logger = LoggerFactory.getLogger(SocketThread.class);
+
     private ArrayList<String> userList = new ArrayList<>();
 
     public void addOnlineUser(String username) {
@@ -24,10 +31,12 @@ public class ServerMain extends Thread {
     }
 
     public void printOnlineUsers() {
-        log("Zalogowani uzytkownicy:");
+        System.out.println();
+        message.logServerSocket(serverSocket, "Zalogowani uzytkownicy:");
         for (String u : userList) {
             System.out.println(u);
         }
+        System.out.println();
     }
 
     public ServerMain(int port) throws IOException {
@@ -35,22 +44,22 @@ public class ServerMain extends Thread {
         serverSocket.setSoTimeout(1000000);
     }
 
-    private void log(String text) {
+/*    private void log(String text) {
         //okienko.wpis(System.currentTimeMillis() + "|" + text + "\n");
         timeAndDate = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss (Z)");
         time = new Date();
         //DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
         System.out.println(timeAndDate.format(time) + "|" + serverSocket.getLocalPort() + "|" + text);
-    }
+    }*/
 
     public void run() {
         while (true) {
             try {
-                log("Oczekiwanie na klienta na porcie " + serverSocket.getLocalPort() + "...");
+                message.logServerSocket(serverSocket,"Oczekiwanie na klienta na porcie " + serverSocket.getLocalPort() + "...");
                 Socket server = serverSocket.accept();//nowy watek + przeslanie do niego tego socketa + kontynuacja petli
                 new Thread(new SocketThread(server, this)).start();
             } catch (SocketTimeoutException s) {
-                log("Socket timed out!");
+                message.logServerSocket(serverSocket,"Socket timed out!");
                 break;
             } catch (IOException e) {
                 e.printStackTrace();

@@ -17,7 +17,7 @@ public class UserService {
 
     public void close() {
         HibernateUtil.getSessionFactory().close();
-    }
+    } //prawdopodobnie można zmienić na HibernateUtil.shutdown();
 
     public void newUser(String userNick, String userPassword) {
         //this.session = HibernateUtil.getSessionFactory().getCurrentSession();

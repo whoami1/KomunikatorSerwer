@@ -8,10 +8,23 @@ import java.io.Serializable;
 public class TestowaWiadomoscResponse implements Serializable {
     private static final long serialVersionUID = 1;
     private boolean succes;
+    private String username;
+    private String text;
 
-    public TestowaWiadomoscResponse(boolean succes) {
+    public TestowaWiadomoscResponse(boolean succes, String username, String text) {
 
         this.succes = succes;
+        this.username = username;
+        this.text = text;
+    }
+
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getText() {
+        return text;
     }
 
     public boolean isSucces() {
@@ -22,7 +35,9 @@ public class TestowaWiadomoscResponse implements Serializable {
     public String toString() {
         return "TestowaWiadomoscResponse{" +
                 "succes=" + succes +
+                ", username='" + username + '\'' +
+                ", text='" + text + '\'' +
                 '}';
     }
-
 }
+

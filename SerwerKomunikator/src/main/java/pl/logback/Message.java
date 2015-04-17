@@ -3,6 +3,7 @@ package pl.logback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -11,10 +12,18 @@ import java.net.Socket;
 public class Message {
     private static final Logger logger = LoggerFactory.getLogger(Message.class);
 
-    public String log()
+    public String log(Socket socket, String text)
     {
-        String msg = "Tutaj jest testowa wiadomosc";
-        logger.info("The message is: {}", msg);
+        String msg = "|" + "Port: "+ socket.getPort() + "|" + text;
+        logger.info(msg);
+        logger.debug("Debugowanie...");
+        return msg;
+    }
+
+    public String logServerSocket(ServerSocket serverSocket, String text)
+    {
+        String msg = "|" + "Port lokalny: "+ serverSocket.getLocalPort() + "|" + text;
+        logger.info(msg);
         logger.debug("Debugowanie...");
         return msg;
     }

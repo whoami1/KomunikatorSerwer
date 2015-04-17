@@ -21,21 +21,21 @@ import java.util.Date;
  */
 public class SocketThread implements Runnable {
     private Socket socket;
-    private SimpleDateFormat timeAndDate;
-    private Date time;
+/*    private SimpleDateFormat timeAndDate;
+    private Date time;*/
 
     public String login;
     private ServerMain server;
 
-/*    private Message message = new Message();
-    private static final Logger logger = LoggerFactory.getLogger(SocketThread.class);*/
+    private Message message = new Message();
+    private static final Logger logger = LoggerFactory.getLogger(SocketThread.class);
 
     public SocketThread(Socket socket, ServerMain server) {
         this.socket = socket;
         this.server = server;
     }
 
-    private void log(String text) {
+/*    private void log(String text) {
         //okienko.wpis(System.currentTimeMillis() + "|" + text + "\n");
         timeAndDate = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss (Z)");
         time = new Date();
@@ -43,14 +43,14 @@ public class SocketThread implements Runnable {
         //DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
         System.out.println(timeAndDate.format(time) + "|" + socket.getPort() + "|" + text);
         System.out.println();
-    }
+    }*/
 
     @Override
     public void run() { //typ pakietu;dane.... - logowanie: login;nick;haslo, rejestracja: register;nick;haslo
         try
         {
             UserService us = new UserService();
-            log("Polaczono z" + socket.getRemoteSocketAddress());
+            message.log(socket,"Polaczono z" + socket.getRemoteSocketAddress());
 
             ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
@@ -69,7 +69,7 @@ public class SocketThread implements Runnable {
                     {
                         login = loginRequest.getLogin();
                         oos.writeObject(new LoginResponse(success));
-                        log("Zalogowano uzytkownika: " + loginRequest.getLogin());
+                        message.log(socket,"Zalogowano uzytkownika: " + loginRequest.getLogin());
 
                         server.addOnlineUser(loginRequest.getLogin());
                         server.printOnlineUsers();
@@ -78,8 +78,8 @@ public class SocketThread implements Runnable {
                     {
                         login = null;
                         oos.writeObject(new LoginResponse(success));
-                        log("Nieprawidlowy login lub haslo - rozlaczam z " + socket.getRemoteSocketAddress());
-                        socket.close();
+                        message.log(socket,"Nieprawid≥owy login lub haslo - rozlaczam z " + socket.getRemoteSocketAddress());
+                        break;
                     }
                 }
                 else if(obj instanceof RegisterRequest)
@@ -91,25 +91,31 @@ public class SocketThread implements Runnable {
                     if (succes)
                     {
                         oos.writeObject(new RegistrationResponse(succes));
-                        log("Uzytkownik o podanym loginie : " + registerRequest.getLogin() + " juz istnieje - rozlaczam z " + socket.getRemoteSocketAddress());
-                        socket.close();
+                        message.log(socket,"Uzytkownik o podanym loginie: " + registerRequest.getLogin() + " juz istnieje - rozlaczam z " + socket.getRemoteSocketAddress());
+                        break;
                     }
                     else
                     {
                         oos.writeObject(new RegistrationResponse(succes));
                         us.newUser(registerRequest.getLogin(), registerRequest.getPassword());
-                        log("Zarejestrowano uzytkownika o loginie: " + registerRequest.getLogin() + " - rozlaczam z " + socket.getRemoteSocketAddress());
-                        socket.close();
+                        message.log(socket,"Zarejestrowano uzytkownika o loginie: " + registerRequest.getLogin() + " - rozlaczam z " + socket.getRemoteSocketAddress());
+                        break;
                     }
                 }
                 else if(obj instanceof TestowaWiadomoscRequest)
                 {
                     TestowaWiadomoscRequest testowaWiadomoscRequest = (TestowaWiadomoscRequest) obj;
                     System.out.println(testowaWiadomoscRequest.toString());
-                    boolean succes = false;
-                    oos.writeObject(new TestowaWiadomoscResponse(succes));
+                    boolean succes = true;
+                    String innyUzytkownik = "innyuzytkownik";
+                    String text = "Odpowiedü od serwera";
+                    Object odpowiedz = new TestowaWiadomoscResponse(succes,innyUzytkownik,text);
+                    oos.writeObject(odpowiedz);
+                    System.out.println(odpowiedz);
                 }
             }
+            ois.close();
+            socket.close();
         }
         catch(SocketException e)
         {
@@ -117,18 +123,18 @@ public class SocketThread implements Runnable {
             {
                 if (!login.isEmpty())
                 {
-                    log("Uzytkownik: " + login + " sie rozlaczyl");
+                    message.log(socket,"Uzytkownik: " + login + " sie rozlaczyl");
                     server.removeOnlineUser(login);
                     server.printOnlineUsers();
                 }
                 else
                 {
-                    log("Klient sie rozlaczyl przed zalogowaniem");
+                    message.log(socket,"Klient sie rozlaczyl przed zalogowaniem");
                 }
             }
             else
             {
-                log("Wyjatek SocketException: [" + e.toString() + "]");
+                message.log(socket,"Wyjatek SocketException: [" + e.toString() + "]");
                 e.printStackTrace();
             }
         }
