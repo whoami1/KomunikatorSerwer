@@ -25,13 +25,13 @@ public class User implements Serializable {
         this.userId = userId;
     }
 
+    public User(String userNick) {
+        this.userNick = userNick;
+    }
+
     public User(String userNick, String userPassword) {
         this.userNick = userNick;
         this.userPassword = userPassword;
-    }
-
-    public User(String userNick) {
-        this.userNick = userNick;
     }
 
     public Integer getUserId() {

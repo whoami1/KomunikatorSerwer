@@ -3,6 +3,7 @@ package pl.wrzesien;
 import org.hibernate.Query;
 import org.hibernate.classic.Session;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,6 +11,7 @@ import java.util.List;
  */
 public class UserService {
     private Session session;
+    private ArrayList<String> userList = new ArrayList<>();
 
     public UserService() {
         this.session = HibernateUtil.getSessionFactory().openSession();

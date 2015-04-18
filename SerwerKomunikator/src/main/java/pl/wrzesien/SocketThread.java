@@ -24,7 +24,7 @@ public class SocketThread implements Runnable {
 /*    private SimpleDateFormat timeAndDate;
     private Date time;*/
 
-    public String login;
+    private User user = new User();
     private ServerMain server;
 
     private Message message = new Message();
@@ -67,18 +67,18 @@ public class SocketThread implements Runnable {
 
                     if (success)
                     {
-                        login = loginRequest.getLogin();
                         oos.writeObject(new LoginResponse(success));
-                        message.log(socket,"Zalogowano uzytkownika: " + loginRequest.getLogin());
+                        message.log(socket, "Zalogowano uzytkownika: " + loginRequest.getLogin());
 
-                        server.addOnlineUser(loginRequest.getLogin());
+                        user.setUserNick(loginRequest.getLogin());
+
+                        server.addOnlineUser(user);
                         server.printOnlineUsers();
                     }
                     else
                     {
-                        login = null;
                         oos.writeObject(new LoginResponse(success));
-                        message.log(socket,"Nieprawid≥owy login lub haslo - rozlaczam z " + socket.getRemoteSocketAddress());
+                        message.log(socket,"Nieprawidlowy login lub haslo - rozlaczam z " + socket.getRemoteSocketAddress());
                         break;
                     }
                 }
@@ -108,7 +108,7 @@ public class SocketThread implements Runnable {
                     System.out.println(testowaWiadomoscRequest.toString());
                     boolean succes = true;
                     String innyUzytkownik = "innyuzytkownik";
-                    String text = "Odpowiedü od serwera";
+                    String text = "Odpowiedz od serwera";
                     Object odpowiedz = new TestowaWiadomoscResponse(succes,innyUzytkownik,text);
                     oos.writeObject(odpowiedz);
                     System.out.println(odpowiedz);
@@ -121,10 +121,11 @@ public class SocketThread implements Runnable {
         {
             if(e.toString().indexOf("Connection reset") != -1)
             {
-                if (!login.isEmpty())
+                if (!user.getUserNick().isEmpty())
                 {
-                    message.log(socket,"Uzytkownik: " + login + " sie rozlaczyl");
-                    server.removeOnlineUser(login);
+                    message.log(socket,"Uzytkownik: " + user.getUserNick() + " sie rozlaczyl");
+
+                    server.removeOnlineUser(user);
                     server.printOnlineUsers();
                 }
                 else

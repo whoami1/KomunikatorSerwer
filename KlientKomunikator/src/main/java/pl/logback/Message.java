@@ -19,19 +19,4 @@ public class Message {
         logger.debug("Debugowanie...");
         return msg;
     }
-
-    public String logServerSocket(ServerSocket serverSocket, String text)
-    {
-        String msg = "|" + "Port lokalny: "+ serverSocket.getLocalPort() + "|" + text;
-        logger.info(msg);
-        logger.debug("Debugowanie...");
-        return msg;
-    }
-
-    public String logTxt(String msg)
-    {
-        logger.info(msg);
-        logger.debug("Debugowanie...");
-        return msg;
-    }
 }

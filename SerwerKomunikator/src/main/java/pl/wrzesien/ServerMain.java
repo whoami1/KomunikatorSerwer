@@ -8,33 +8,39 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class ServerMain extends Thread {
     private ServerSocket serverSocket;
-    private SimpleDateFormat timeAndDate;
-    private Date time;
 
     private Message message = new Message();
-    private static final Logger logger = LoggerFactory.getLogger(SocketThread.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
 
-    private ArrayList<String> userList = new ArrayList<>();
+    private ArrayList<User> userList = new ArrayList<>();
 
-    public void addOnlineUser(String username) {
+    public void addOnlineUser(User username) {
         userList.add(username);
     }
 
-    public void removeOnlineUser(String username) {
+    public void removeOnlineUser(User username) {
         userList.remove(username);
     }
 
     public void printOnlineUsers() {
         System.out.println();
         message.logServerSocket(serverSocket, "Zalogowani uzytkownicy:");
-        for (String u : userList) {
-            System.out.println(u);
+        for (User u : userList)
+        {
+            if(userList.size() != 0)
+            {
+                System.out.println(u.getUserNick());
+            }
+            else
+            {
+                //z jakiegos powodu to nie dziala
+                System.out.println("Brak");
+                message.logTxt("Brak zalogowanych uzytkownikow");
+            }
         }
         System.out.println();
     }
@@ -43,14 +49,6 @@ public class ServerMain extends Thread {
         serverSocket = new ServerSocket(port);
         serverSocket.setSoTimeout(1000000);
     }
-
-/*    private void log(String text) {
-        //okienko.wpis(System.currentTimeMillis() + "|" + text + "\n");
-        timeAndDate = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss (Z)");
-        time = new Date();
-        //DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
-        System.out.println(timeAndDate.format(time) + "|" + serverSocket.getLocalPort() + "|" + text);
-    }*/
 
     public void run() {
         while (true) {
@@ -69,7 +67,7 @@ public class ServerMain extends Thread {
     }
 
     public static void main(String[] args) {
-        int port = 6066;//Integer.parseInt(args[0]);
+        int port = 6066;
         try {
             Thread t = new ServerMain(port);
             t.start();
